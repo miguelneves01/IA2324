@@ -1,0 +1,6 @@
+(defun linha (n tabuleiro)
+    (cond ((= n 0) (car tabuleiro))
+          (T (linha (- n 1) (cdr tabuleiro))))
+)
+
+(defun )
