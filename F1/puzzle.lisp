@@ -10,6 +10,10 @@
     (loop for i upto (- n 1) collect i)
 )
 
+(defun lista-duplos ( &optional (n 10))
+    (loop for i upto (- n 1) collect (+ (* i 10) i))
+)
+
 ;;(remover-se #'(lambda (x) (= x 0)) '(1 2 0 2 0 4))
 (defun remover-se(pred lista)
   (cond ((null lista) NIL) 
@@ -75,9 +79,44 @@
     (multiple-value-bind (q r) (floor num 10) (+ (* r 10) q))
 )
 
-(defun substituir-simetrico (num lista)
-    (let ((pos (posicao (simetrico num) lista)))
-        (substituir (first pos) (second pos) lista)
+(defun duplop (num)
+    (= num (simetrico num))
+)
+
+(defun substituir-duplo-random (lista-duplos lista)
+    (let* ((num (pick-random lista-duplos)))
+        (cond 
+            ((not lista) NIL)
+            ((= (length lista-duplos) 0) lista)
+            ((posicao num lista) 
+                (substituir 
+                    (first (posicao num lista))
+                    (second (posicao num lista))
+                    lista))
+            (T (substituir-duplo-random (remover-se #'(lambda (x) (= x num)) lista-duplos) lista))
+        )
+    )
+)
+
+
+(defun substituir-duplo-max (lista-duplos lista)
+    (cond 
+        ((not lista) NIL)
+        ((= (length lista-duplos) 0) lista)
+        ((posicao (first lista-duplos) lista) 
+            (substituir 
+                (first (posicao (first lista-duplos) lista))
+                (second (posicao (first lista-duplos) lista))
+                lista))
+        (T (substituir-duplo-max (cdr lista-duplos) lista))
+    )
+)
+
+(defun substituir-simetrico (num lista &optional(maxp T))
+    (cond 
+        ((and (duplop num) (not maxp)) (substituir-duplo-random (remover-se #'(lambda (x) (= x num)) (lista-duplos)) lista))
+        ((duplop num) (substituir-duplo-max (reverse (remover-se #'(lambda (x) (= x num)) (lista-duplos))) lista))
+        (T (substituir (first (posicao (simetrico num) lista)) (second (posicao (simetrico num) lista)) lista))
     )
 )
 
@@ -117,6 +156,7 @@
     )   
 )
 
+
 (defun operador-1 (lista)
     (operador lista -1 2)
 )
@@ -140,4 +180,11 @@
 )
 (defun operador-8 (lista)
     (operador lista -2 1)
+)
+
+(defun operador-inicial (lista &optional (casa 0))
+    (substituir 
+        casa
+        0
+     lista T)
 )
