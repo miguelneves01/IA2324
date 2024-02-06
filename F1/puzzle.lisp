@@ -60,7 +60,8 @@
 
 ;; Replaces the element at position (x, y) in the list with the specified value.
 (defun substituir (x y lista &optional (valor NIL))
-   (cond 
+   (cond
+    ((or (not x) (not y)) lista)
     ((> y (- (length lista) 1)) NIL)
     (T (append (subseq lista 0 y) 
             (cons (substituir-posicao x (linha y lista) valor) (subseq lista (+ y 1)))))
@@ -97,6 +98,15 @@
     (= num (simetrico num))
 )
 
+(defun existep (lista value)
+    (cond
+        ((not lista) NIL)
+        ((= (length lista) 0) NIL)
+        ((valuep (car lista) value) T)
+        (T (existep (cdr lista) value))
+    )
+)
+
 ;; Replaces a random double number in the list with NIL.
 (defun substituir-duplo-random (lista-duplos lista)
     (let* ((num (pick-random lista-duplos)))
@@ -129,10 +139,13 @@
 
 ;; Replaces the symmetric of the given number in the list with NIL.
 (defun substituir-simetrico (num lista &optional(maxp T))
-    (cond 
-        ((and (duplop num) (not maxp)) (substituir-duplo-random (remover-se #'(lambda (x) (= x num)) (lista-duplos)) lista))
-        ((duplop num) (substituir-duplo-max (reverse (remover-se #'(lambda (x) (= x num)) (lista-duplos))) lista))
-        (T (substituir (first (posicao (simetrico num) lista)) (second (posicao (simetrico num) lista)) lista))
+    (let* ((duplos (remover-se #'(lambda (x) (= x num)) (lista-duplos))))
+        (cond 
+            ((and (duplop num) (not maxp) (> (length duplos) 0)) (substituir-duplo-random duplos lista))
+            ((and (duplop num) (> (length duplos) 0)) (substituir-duplo-max (reverse duplos) lista))
+            ((not (existep lista (simetrico num))) lista)
+            (T (substituir (first (posicao (simetrico num) lista)) (second (posicao (simetrico num) lista)) lista))
+        )
     )
 )
 
@@ -149,12 +162,29 @@
     (cond
         ((not lista) NIL)
         ((not pos) NIL)
+        ((not (first pos)) NIL)
+        ((not (second pos)) NIL)
         ((or (< (first pos) 0) (< (second pos) 0)) NIL)
         ((or (> (first pos) 9) (> (second pos) 9)) NIL)
         ((not (celula (second pos) (first pos) lista)) NIL)
         (T T)
     )
 )
+
+(defun valor-posicao (lista pos)
+    (cond
+        ((not lista) NIL)
+        ((not pos) NIL)
+        (T (celula (second pos) (first pos) lista))
+    )
+)
+
+(defun posicoes-iniciais (lista)
+    (let* ((pos-possiveis (lista-numeros 10)))
+        (remover-se #'(lambda (x) (not (posicao-valida lista (list x 0)))) pos-possiveis)
+    )
+)
+
 
 ;; Moves the horse in the board using the given x and y offsets.
 (defun operador (lista x y)
@@ -173,6 +203,10 @@
             )
         )
     )   
+)
+
+(defun operadores ()
+    (list 'operador-1 'operador-2 'operador-3 'operador-4 'operador-5 'operador-6 'operador-7 'operador-8)
 )
 
 ;; Moves the horse in the board using the (-1, 2) offset.
