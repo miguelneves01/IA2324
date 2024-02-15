@@ -27,12 +27,9 @@
 
 (defun ler-tabuleiro ()
     (format t "Usar tabuleiro aleatorio? (S/N) ~%")
-    (cond
-        ((eql (read) 'S) 
-            (tabuleiro-aleatorio)
-        )
-        ;;( T (escolher-tabuleiro (carregar-tabuleiros  "//wsl.localhost/Ubuntu-22.04/home/miguel/dev/IA2324/F1/problemas.dat")))
-        ( T (escolher-tabuleiro (carregar-tabuleiros  "C:/IPS/EI/3Ano/IA/Projeto/F1/problemas.dat")))
+    (case (read)
+        ('s (tabuleiro-aleatorio))
+        ('n (escolher-tabuleiro (carregar-tabuleiros  "C:/IPS/EI/3Ano/IA/Projeto/F1/problemas.dat")))
     )
 )
 
@@ -44,6 +41,11 @@
     )
 )
 
+(defun ler-objetivo ()
+    (format t "Qual eh o objetivo?~%")
+    (read)
+)
+
 (defun init ()
-    (funcall (ler-algoritmo) (ler-tabuleiro))
+    (funcall (ler-algoritmo) (ler-tabuleiro) (ler-objetivo))
 )
