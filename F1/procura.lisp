@@ -50,28 +50,11 @@
 )
 
 (defun abertos-bfs (nos-abertos nos-sucessores)
-    (reduce #'cons nos-abertos :initial-value nos-sucessores :from-end t)
+    (append nos-abertos nos-sucessores)
 )
 
 (defun abertos-dfs (nos-abertos nos-sucessores)
-    (stable-sort (reduce #'cons nos-abertos :initial-value nos-sucessores :from-end t) 
-                 #'(lambda (x y) (> (no-profundidade x) (no-profundidade y)))
-    )
-)
-
-(defun dfs (tabuleiro)
-    (dfs2 (car (nos-iniciais tabuleiro)) (cdr (nos-iniciais tabuleiro)))
-)
-
-(defun dfs2 (no &optional (abertos (nos-iniciais (no-tabuleiro no))) (fechados ()) (solucao no) (operadores (operadores))  (max-prof 8))
-  (let* ((novos-abertos (abertos-dfs abertos (sucessores no (operadores-validos operadores (no-tabuleiro no)) max-prof))))
-     (cond 
-         ((null novos-abertos) solucao)
-         ((OR (> (no-profundidade no) max-prof) (no-existep no fechados)) (dfs2 (car novos-abertos) (cdr novos-abertos) (cons no fechados) solucao operadores max-prof ))
-         ((and (solucaop no operadores) (> (no-pontuacao no) (no-pontuacao solucao))) (dfs2 (car novos-abertos) (cdr novos-abertos) (cons no fechados) no operadores max-prof ))
-         (T (dfs2 (car novos-abertos) (cdr novos-abertos) (cons no fechados) solucao operadores max-prof ))
-     )
-  )
+    (append nos-sucessores nos-abertos)
 )
 
 (defun solucaop (no operadores)
@@ -87,4 +70,82 @@
         ((equal (no-tabuleiro no) (no-tabuleiro (car lista))) T)
         (T (no-existep no (cdr lista)))
     )
+)
+
+(defun dfs2 (no abertos &optional (max-prof 8) (fechados '()) (solucao no) (operadores (operadores)))
+    (cond 
+        ((null abertos) solucao)
+        ((OR (> (no-profundidade no) max-prof) (no-existep no fechados)) 
+            (dfs2 
+                (car (abertos-dfs abertos (sucessores no (operadores-validos operadores (no-tabuleiro no)) max-prof))) 
+                (cdr (abertos-dfs abertos (sucessores no (operadores-validos operadores (no-tabuleiro no)) max-prof))) 
+                (cons no fechados)  
+                solucao
+                operadores 
+                max-prof 
+            )
+        )
+        ((and (solucaop no operadores) (> (no-pontuacao no) (no-pontuacao solucao))) 
+            (dfs2 
+                (car (abertos-dfs abertos (sucessores no (operadores-validos operadores (no-tabuleiro no)) max-prof))) 
+                (cdr (abertos-dfs abertos (sucessores no (operadores-validos operadores (no-tabuleiro no)) max-prof))) 
+                (cons no fechados) 
+                no 
+                operadores 
+                max-prof 
+            )
+        )
+        (T (dfs2 
+                (car (abertos-dfs abertos (sucessores no (operadores-validos operadores (no-tabuleiro no)) max-prof))) 
+                (cdr (abertos-dfs abertos (sucessores no (operadores-validos operadores (no-tabuleiro no)) max-prof))) 
+                (cons no fechados) 
+                solucao 
+                operadores 
+                max-prof 
+            )
+        )
+    )
+)
+
+(defun dfs (tabuleiro)
+    (dfs2 (car (nos-iniciais tabuleiro)) (cdr (nos-iniciais tabuleiro)) 20)
+)
+
+(defun bfs2 (no abertos &optional (max-prof 8) (fechados '()) (solucao no) (operadores (operadores)))
+    (cond 
+        ((null abertos) solucao)
+        ((OR (> (no-profundidade no) max-prof) (no-existep no fechados)) 
+            (bfs2 
+                (car (abertos-bfs abertos (sucessores no (operadores-validos operadores (no-tabuleiro no)) max-prof))) 
+                (cdr (abertos-bfs abertos (sucessores no (operadores-validos operadores (no-tabuleiro no)) max-prof))) 
+                (cons no fechados)  
+                solucao
+                operadores 
+                max-prof
+            )
+        )
+        ((and (solucaop no operadores) (> (no-pontuacao no) (no-pontuacao solucao))) 
+            (bfs2 
+                (car (abertos-bfs abertos (sucessores no (operadores-validos operadores (no-tabuleiro no)) max-prof))) 
+                (cdr (abertos-bfs abertos (sucessores no (operadores-validos operadores (no-tabuleiro no)) max-prof))) 
+                (cons no fechados) 
+                no 
+                operadores 
+                max-prof 
+            )
+        )
+        (T (bfs2 
+                (car (abertos-bfs abertos (sucessores no (operadores-validos operadores (no-tabuleiro no)) max-prof))) 
+                (cdr (abertos-bfs abertos (sucessores no (operadores-validos operadores (no-tabuleiro no)) max-prof))) 
+                (cons no fechados) 
+                solucao 
+                operadores 
+                max-prof 
+            )
+        )
+    )
+)
+
+(defun bfs (tabuleiro)
+    (bfs2 (car (nos-iniciais tabuleiro)) (cdr (nos-iniciais tabuleiro)) 20)
 )
