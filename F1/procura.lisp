@@ -1,7 +1,7 @@
 ;;(tabuleiro profundidade pontuação no-pai operadores-utilizados)
 
-(defun criar-no (tabuleiro &optional (profundidade 0) (pontuacao 0) (pai nil) (operadores-utilizados '()))
-    (list tabuleiro profundidade pontuacao pai operadores-utilizados)
+(defun criar-no (tabuleiro &optional (profundidade 0) (pontuacao 0) (operadores-utilizados '()))
+    (list tabuleiro profundidade pontuacao operadores-utilizados)
 )
 
 (defun nos-iniciais (tabuleiro)
@@ -10,7 +10,6 @@
         (operador-inicial tabuleiro x)
         1
         (valor-posicao tabuleiro (list x 0))
-        (criar-no tabuleiro)
         (list 'operador-inicial (list x 0))
     )) (posicoes-iniciais tabuleiro))
 )
@@ -27,12 +26,8 @@
     (car (cdr (cdr no)))
 )
 
-(defun no-pai (no)
-    (car (cdr (cdr (cdr no))))
-)
-
 (defun no-operadores-utilizados (no)
-    (car (cdr (cdr (cdr (cdr no)))))
+    (car (cdr (cdr (cdr no))))
 )
 
 (defun no-adicionar-operador-utilizado (no operador)
@@ -44,7 +39,7 @@
         ((not (funcall operador (no-tabuleiro no))) nil)
         (T (list (funcall operador (no-tabuleiro no)) (+ (no-profundidade no) 1) 
         (+ (valor-posicao (no-tabuleiro no) (posicao-cavalo (funcall operador (no-tabuleiro no)))) (no-pontuacao no)) 
-        no (no-adicionar-operador-utilizado no operador)))
+        (no-adicionar-operador-utilizado no operador)))
     )
 )
 
@@ -64,18 +59,32 @@
     )
 )
 
-(defun dfs (no solucaop nos-sucessores operadores max-prof &optional (abertos (nos-iniciais (no-tabuleiro no))) (fechados ()))
-  (let* ((novos-sucessores (nos-sucessores no operadores 'dfs max-prof)))
+(defun dfs (tabuleiro)
+    (dfs2 (car (nos-iniciais tabuleiro)) (cdr (nos-iniciais tabuleiro)))
+)
+
+(defun dfs2 (no &optional (abertos (nos-iniciais (no-tabuleiro no))) (fechados ()) (solucao no) (operadores (operadores))  (max-prof 8))
+  (let* ((novos-abertos (abertos-dfs abertos (sucessores no (operadores-validos operadores (no-tabuleiro no)) max-prof))))
      (cond 
-         ((funcall solucaop no) no)
-         ((OR (> (no-profundidade no) max-prof) (no-existep no novos-sucessores 'dfs)) nil)
-         (T     
-             (dfs (car novos-sucessores) solucaop nos-sucessores operadores max-prof (abertos-dfs ) (cons no fechados))
-         )
+         ((null novos-abertos) solucao)
+         ((OR (> (no-profundidade no) max-prof) (no-existep no fechados)) (dfs2 (car novos-abertos) (cdr novos-abertos) (cons no fechados) solucao operadores max-prof ))
+         ((and (solucaop no operadores) (> (no-pontuacao no) (no-pontuacao solucao))) (dfs2 (car novos-abertos) (cdr novos-abertos) (cons no fechados) no operadores max-prof ))
+         (T (dfs2 (car novos-abertos) (cdr novos-abertos) (cons no fechados) solucao operadores max-prof ))
      )
   )
 )
 
-(defun solucaop (no)
+(defun solucaop (no operadores)
+    (cond 
+        ((NULL (operadores-validos operadores (no-tabuleiro no))) T)
+        (T NIL)
+    )
+)
 
+(defun no-existep (no lista)
+    (cond 
+        ((null lista) NIL)
+        ((equal (no-tabuleiro no) (no-tabuleiro (car lista))) T)
+        (T (no-existep no (cdr lista)))
+    )
 )

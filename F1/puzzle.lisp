@@ -25,7 +25,7 @@
         (T (cons (car lista) (remover-se pred (cdr lista))))))
 
 ;; Picks a random element from the list.
-(defun pick-random (lista)
+(defun escolher-aleatorio (lista)
     (cond
         ((= (length lista) 0) NIL)
         (T (nth (random (length lista)) lista))
@@ -33,13 +33,11 @@
 )
 
 ;; Shuffles the list by randomly picking elements.
-(defun baralhar (remover &optional (nova-lista '()))
-    (let ((num (pick-random remover)))
-        (cond 
-            ((= (length remover) 0) nova-lista)
-            (T (baralhar (remover-se #'(lambda (x) (= x num)) remover) (cons num nova-lista)))
-        ) 
-    )
+(defun baralhar (remover &optional (nova-lista '()) (num (escolher-aleatorio remover)))
+    (cond 
+        ((= (length remover) 0) nova-lista)
+        (T (baralhar (remover-se #'(lambda (x) (= x num)) remover) (cons num nova-lista)))
+    ) 
 )
 
 ;; Generates a random board by shuffling a list of numbers.
@@ -109,7 +107,7 @@
 
 ;; Replaces a random double number in the list with NIL.
 (defun substituir-duplo-random (lista-duplos lista)
-    (let* ((num (pick-random lista-duplos)))
+    (let* ((num (escolher-aleatorio lista-duplos)))
         (cond 
             ((not lista) NIL)
             ((= (length lista-duplos) 0) lista)
@@ -203,6 +201,10 @@
             )
         )
     )   
+)
+
+(defun operadores-validos (operadores lista)
+    (remover-se #'(lambda (x) (not (funcall x lista))) operadores)
 )
 
 (defun operadores ()
