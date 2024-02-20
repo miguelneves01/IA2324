@@ -34,10 +34,11 @@
 )
 
 (defun ler-algoritmo ()
-    (format t "Escolhe o algoritmo:~%1. DFS~%2. BFS~%")
+    (format t "Escolhe o algoritmo:~%1. DFS~%2. BFS~%3. A*~%")
     (case (read)
         (1 'dfs)
         (2 'bfs)
+        (3 'a-star)
     )
 )
 
@@ -46,6 +47,20 @@
     (read)
 )
 
+(defun ler-heuristica ()
+    (format t "Escolhe a heuristica:~%1. Maior Valor~%")
+    (case (read)
+        (1 'no-heuristica-1)
+        ;;(2 'heuristica-2)
+    )
+)
+
 (defun init ()
-    (funcall (ler-algoritmo) (ler-tabuleiro) (ler-objetivo))
+    (let ((algoritmo (ler-algoritmo)))
+        (case algoritmo
+            ('a-star (a-star (ler-tabuleiro) (ler-objetivo) (ler-heuristica)))
+            ('dfs (dfs (ler-tabuleiro) (ler-objetivo)))
+            ('bfs (bfs (ler-tabuleiro) (ler-objetivo)))
+        )
+    )
 )

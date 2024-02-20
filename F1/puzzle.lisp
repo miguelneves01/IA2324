@@ -8,21 +8,19 @@
     (nth x (linha y tabuleiro))
 )
 
-;; Generates a list of numbers from 0 to n-1 (default: 100).
-(defun lista-numeros ( &optional (n 100))
-    (loop for i upto (- n 1) collect i)
+(defun lista-numeros ( &optional (n 100) (lista '()) (num 0) )
+    (cond
+        ((= num n) lista)
+        (T (lista-numeros n (cons num lista) (+ num 1)))
+    )
 )
 
-;; Generates a list of doubles from 0 to n-1 (default: 10).
-(defun lista-duplos ( &optional (n 10))
-    (loop for i upto (- n 1) collect (+ (* i 10) i))
+(defun lista-duplos ( &optional (n 10) (lista '()) (num 0))
+    (cond
+        ((= num n) lista)
+        (T (lista-duplos n (cons (+ (* num 10) num) lista) (+ num 1)))
+    )
 )
-
-;; Removes all elements from the list that satisfy the given predicate.
-(defun remover-se(pred lista)
-  (cond ((null lista) NIL) 
-        ((funcall pred (car lista)) (remover-se pred (cdr lista)))
-        (T (cons (car lista) (remover-se pred (cdr lista))))))
 
 ;; Picks a random element from the list.
 (defun escolher-aleatorio (lista)
@@ -36,7 +34,7 @@
 (defun baralhar (remover &optional (nova-lista '()) (num (escolher-aleatorio remover)))
     (cond 
         ((= (length remover) 0) nova-lista)
-        (T (baralhar (remover-se #'(lambda (x) (= x num)) remover) (cons num nova-lista)))
+        (T (baralhar (remove-if #'(lambda (x) (= x num)) remover) (cons num nova-lista)))
     ) 
 )
 
@@ -67,19 +65,15 @@
 )
 
 ;; Checks if the given value is present in the list.
-(defun valuep (lista &optional (value T))
-    (member value lista)
-)
+  (defun valuep (value lista)
+  (and (listp lista) (member value lista)))
 
-;; Returns the position of the given value in the list as a (x, y) pair.
-(defun posicao (value lista &optional (y 0))
-    (cond
-        ((not lista) nil) 
-        ((= (length lista) 0) nil)
-        ((valuep (car lista) value) (list (position value (car lista)) y))
-        (T (posicao value (cdr lista) (+ y 1)))
-    )
-)
+(defun posicao (value lista)
+  (let ((result (find value lista :test #'valuep)))
+    (when result
+      (list (position value result) (position result lista)))))
+
+
 
 ;; Returns the position of the horse in the board as a (x, y) pair.
 (defun posicao-cavalo (lista)
@@ -97,12 +91,7 @@
 )
 
 (defun existep (lista value)
-    (cond
-        ((not lista) NIL)
-        ((= (length lista) 0) NIL)
-        ((valuep (car lista) value) T)
-        (T (existep (cdr lista) value))
-    )
+    (and (not (first (posicao value lista))) (not (second (posicao value lista)))) 
 )
 
 ;; Replaces a random double number in the list with NIL.
@@ -116,7 +105,7 @@
                     (first (posicao num lista))
                     (second (posicao num lista))
                     lista))
-            (T (substituir-duplo-random (remover-se #'(lambda (x) (= x num)) lista-duplos) lista))
+            (T (substituir-duplo-random (remove-if #'(lambda (x) (= x num)) lista-duplos) lista))
         )
     )
 )
@@ -137,7 +126,7 @@
 
 ;; Replaces the symmetric of the given number in the list with NIL.
 (defun substituir-simetrico (num lista &optional(maxp T))
-    (let* ((duplos (remover-se #'(lambda (x) (= x num)) (lista-duplos))))
+    (let* ((duplos (remove-if #'(lambda (x) (= x num)) (lista-duplos))))
         (cond 
             ((and (duplop num) (not maxp) (> (length duplos) 0)) (substituir-duplo-random duplos lista))
             ((and (duplop num) (> (length duplos) 0)) (substituir-duplo-max (reverse duplos) lista))
@@ -179,7 +168,7 @@
 
 (defun posicoes-iniciais (lista)
     (let* ((pos-possiveis (lista-numeros 10)))
-        (remover-se #'(lambda (x) (not (posicao-valida lista (list x 0)))) pos-possiveis)
+        (remove-if #'(lambda (x) (not (posicao-valida lista (list x 0)))) pos-possiveis)
     )
 )
 
@@ -204,7 +193,7 @@
 )
 
 (defun operadores-validos (operadores lista)
-    (remover-se #'(lambda (x) (not (funcall x lista))) operadores)
+    (remove-if #'(lambda (x) (not (funcall x lista))) operadores)
 )
 
 (defun operadores ()
@@ -257,4 +246,20 @@
         casa
         0
      lista T)
+)
+
+(defun game-overp (no operadores)
+    (cond 
+        ((NULL (operadores-validos operadores (no-tabuleiro no))) T)
+        (T NIL)
+    )
+)
+
+
+(defun heuristica-maiorvalor (valor valor-total)
+    (float (/ valor valor-total))
+)
+
+(defun valor-tabuleiro (tabuleiro)
+    (reduce #'+ (mapcar #'(lambda (x) (reduce #'+ (remove-if #'(lambda (y) (or (not y) (equal y 'T))) x))) tabuleiro))
 )
