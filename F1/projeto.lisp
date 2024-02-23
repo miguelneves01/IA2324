@@ -1,7 +1,6 @@
-;;(load "//wsl.localhost/Ubuntu-22.04/home/miguel/dev/IA2324/F1/puzzle.lisp")
-(load "C:/IPS/EI/3Ano/IA/Projeto/F1/puzzle.lisp")
-;;(load "//wsl.localhost/Ubuntu-22.04/home/miguel/dev/IA2324/F1/procura.lisp")
-(load "C:/IPS/EI/3Ano/IA/Projeto/F1/procura.lisp")
+(load (merge-pathnames "puzzle.lisp" *compile-file-pathname*))
+(load (merge-pathnames "procura.lisp" *compile-file-pathname*))
+(defvar *problemas* (merge-pathnames "problemas.dat" *compile-file-pathname*))
 
 (defun carregar-tabuleiros 
     (filepath)
@@ -16,51 +15,57 @@
 )
 
 (defun escolher-tabuleiro 
-    (lists)
+    (tabuleiros)
     (format t "~%Escolhe o tabuleiro:~%")
     (loop for i from 1 to 
-        (length lists) do
-        (format t "~d. ~%" i)
+        (length tabuleiros) do
+        (format t "~a.~%" (code-char (+ (char-code #\A) (- i 1))))
+        (print-tabuleiro (nth (- i 1) tabuleiros))
+        (format t "~%")
     )
-    (nth (- (read) 1) lists)
+    (nth (- (char-code (coerce (read) 'character)) (char-code #\A)) tabuleiros)
+)
+
+(defun escrever-aleatorio ()
+    (with-open-file 
+        (file *problemas* :direction :output :if-exists :append)
+        (format file "~a" (tabuleiro-aleatorio))
+    )
 )
 
 (defun ler-tabuleiro ()
-    (format t "Usar tabuleiro aleatorio? (S/N) ~%")
-    (case (read)
-        ('s (tabuleiro-aleatorio))
-        ('n (escolher-tabuleiro (carregar-tabuleiros  "C:/IPS/EI/3Ano/IA/Projeto/F1/problemas.dat")))
-    )
+    (escrever-aleatorio)
+    (escolher-tabuleiro (carregar-tabuleiros *problemas* ))
 )
 
 (defun ler-algoritmo ()
     (format t "Escolhe o algoritmo:~%1. DFS~%2. BFS~%3. A*~%")
     (case (read)
-        (1 'dfs)
-        (2 'bfs)
+        (1 'abertos-dfs)
+        (2 'abertos-bfs)
         (3 'a-star)
     )
 )
 
 (defun ler-objetivo ()
-    (format t "Qual eh o objetivo?~%")
+    (format t "Qual o objetivo?~%")
     (read)
 )
 
 (defun ler-heuristica ()
-    (format t "Escolhe a heuristica:~%1. Maior Valor~%")
+    (format t "Escolhe a heuristica:~%1. Maior Valor~%2. Dada~%")
     (case (read)
-        (1 'no-heuristica-1)
-        ;;(2 'heuristica-2)
+        (1 'heuristica-maiorvalor)
+        (2 'heuristica-dada)
     )
 )
 
 (defun init ()
-    (let ((algoritmo (ler-algoritmo)))
-        (case algoritmo
-            ('a-star (a-star (ler-tabuleiro) (ler-objetivo) (ler-heuristica)))
-            ('dfs (dfs (ler-tabuleiro) (ler-objetivo)))
-            ('bfs (bfs (ler-tabuleiro) (ler-objetivo)))
+    (let ((algo (ler-algoritmo)))
+        (cond 
+            ((equal algo 'a-star) (a-star (ler-tabuleiro) (ler-objetivo) (ler-heuristica)))
+            (T (call-algoritmo algo (ler-tabuleiro) (ler-objetivo)))
         )
     )
+    
 )

@@ -1,9 +1,7 @@
-;; Returns the row at index y in the given board.
 (defun linha (y tabuleiro)
     (nth y tabuleiro)
 )
 
-;; Returns the cell at position (y, x) in the given board.
 (defun celula (y x tabuleiro)
     (nth x (linha y tabuleiro))
 )
@@ -22,7 +20,6 @@
     )
 )
 
-;; Picks a random element from the list.
 (defun escolher-aleatorio (lista)
     (cond
         ((= (length lista) 0) NIL)
@@ -30,7 +27,6 @@
     )
 )
 
-;; Shuffles the list by randomly picking elements.
 (defun baralhar (remover &optional (nova-lista '()) (num (escolher-aleatorio remover)))
     (cond 
         ((= (length remover) 0) nova-lista)
@@ -38,7 +34,6 @@
     ) 
 )
 
-;; Generates a random board by shuffling a list of numbers.
 (defun tabuleiro-aleatorio (&optional (lista (baralhar(lista-numeros))) (n 10))
     (cond
         ((null lista) nil)
@@ -46,7 +41,6 @@
     )
 )
 
-;; Replaces the element at the given index in the list with the specified value.
 (defun substituir-posicao (indice lista &optional (valor NIL))
     (cond
       ((> indice (- (length lista) 1)) NIL)
@@ -54,7 +48,6 @@
     )
 )
 
-;; Replaces the element at position (x, y) in the list with the specified value.
 (defun substituir (x y lista &optional (valor NIL))
    (cond
     ((or (not x) (not y)) lista)
@@ -64,7 +57,6 @@
     )
 )
 
-;; Checks if the given value is present in the list.
   (defun valuep (value lista)
   (and (listp lista) (member value lista)))
 
@@ -73,19 +65,14 @@
     (when result
       (list (position value result) (position result lista)))))
 
-
-
-;; Returns the position of the horse in the board as a (x, y) pair.
 (defun posicao-cavalo (lista)
     (posicao T lista)
 )
 
-;; Returns the symmetric number of the given number.
 (defun simetrico (num)
     (multiple-value-bind (q r) (floor num 10) (+ (* r 10) q))
 )
 
-;; Checks if the given number is a double.
 (defun duplop (num)
     (= num (simetrico num))
 )
@@ -94,23 +81,6 @@
     (and (not (first (posicao value lista))) (not (second (posicao value lista)))) 
 )
 
-;; Replaces a random double number in the list with NIL.
-(defun substituir-duplo-random (lista-duplos lista)
-    (let* ((num (escolher-aleatorio lista-duplos)))
-        (cond 
-            ((not lista) NIL)
-            ((= (length lista-duplos) 0) lista)
-            ((posicao num lista) 
-                (substituir 
-                    (first (posicao num lista))
-                    (second (posicao num lista))
-                    lista))
-            (T (substituir-duplo-random (remove-if #'(lambda (x) (= x num)) lista-duplos) lista))
-        )
-    )
-)
-
-;; Replaces the maximum double number in the list with NIL
 (defun substituir-duplo-max (lista-duplos lista)
     (cond 
         ((not lista) NIL)
@@ -124,11 +94,9 @@
     )
 )
 
-;; Replaces the symmetric of the given number in the list with NIL.
-(defun substituir-simetrico (num lista &optional(maxp T))
-    (let* ((duplos (remove-if #'(lambda (x) (= x num)) (lista-duplos))))
+(defun substituir-simetrico (num lista)
+    (let ((duplos (remove-if #'(lambda (x) (= x num)) (lista-duplos))))
         (cond 
-            ((and (duplop num) (not maxp) (> (length duplos) 0)) (substituir-duplo-random duplos lista))
             ((and (duplop num) (> (length duplos) 0)) (substituir-duplo-max (reverse duplos) lista))
             ((not (existep lista (simetrico num))) lista)
             (T (substituir (first (posicao (simetrico num) lista)) (second (posicao (simetrico num) lista)) lista))
@@ -136,7 +104,6 @@
     )
 )
 
-;; Calculates the new position by applying the given offset to the current position.
 (defun nova-posicao (pos offset-x offset-y)
   (cond
        ((not pos) NIL)
@@ -144,7 +111,6 @@
    )
 )
 
-;; Checks if the new position is valid in the given board.
 (defun posicao-valida (lista pos)
     (cond
         ((not lista) NIL)
@@ -167,13 +133,11 @@
 )
 
 (defun posicoes-iniciais (lista)
-    (let* ((pos-possiveis (lista-numeros 10)))
+    (let ((pos-possiveis (lista-numeros 10)))
         (remove-if #'(lambda (x) (not (posicao-valida lista (list x 0)))) pos-possiveis)
     )
 )
 
-
-;; Moves the horse in the board using the given x and y offsets.
 (defun operador (lista x y)
     (let (
             (pos (posicao-cavalo lista))
@@ -200,47 +164,38 @@
     (list 'operador-1 'operador-2 'operador-3 'operador-4 'operador-5 'operador-6 'operador-7 'operador-8)
 )
 
-;; Moves the horse in the board using the (-1, 2) offset.
 (defun operador-1 (lista)
     (operador lista -1 2)
 )
 
-;; Moves the horse in the board using the (1, 2) offset.
 (defun operador-2 (lista)
     (operador lista 1 2)
 )
 
-;; Moves the horse in the board using the (2, 1) offset.
 (defun operador-3 (lista)
     (operador lista 2 1)
 )
 
-;; Moves the horse in the board using the (2, -1) offset.
 (defun operador-4 (lista)
     (operador lista 2 -1)
 )
 
-;; Moves the horse in the board using the (1, -2) offset.
 (defun operador-5 (lista)
     (operador lista 1 -2)
 )
 
-;; Moves the horse in the board using the (-1, -2) offset.
 (defun operador-6 (lista)
     (operador lista -1 -2)
 )
 
-;; Moves the horse in the board using the (-2, -1) offset.
 (defun operador-7 (lista)
     (operador lista -2 -1)
 )
 
-;; Moves the horse in the board using the (-2, 1) offset.
 (defun operador-8 (lista)
     (operador lista -2 1)
 )
 
-;; Sets the initial position of the horse in the board.
 (defun operador-inicial (lista &optional (casa 0))
     (substituir 
         casa
@@ -255,11 +210,26 @@
     )
 )
 
-
-(defun heuristica-maiorvalor (valor valor-total)
-    (float (/ valor valor-total))
+(defun count-numbers (tabuleiro &optional (count 0))
+    (cond
+        ((NULL tabuleiro) count)
+        (T (count-numbers (cdr tabuleiro) (+ count (length (remove-if-not #'(lambda (x) (numberp x)) (car tabuleiro))))))
+    )
 )
 
 (defun valor-tabuleiro (tabuleiro)
-    (reduce #'+ (mapcar #'(lambda (x) (reduce #'+ (remove-if #'(lambda (y) (or (not y) (equal y 'T))) x))) tabuleiro))
+    (reduce #'+ (mapcar #'(lambda (x) (reduce #'+ (remove-if-not #'(lambda (y) (numberp y)) x))) tabuleiro))
+)
+
+(defun print-tabuleiro (tabuleiro)
+    (format t "~a~%" (first tabuleiro))
+    (format t "~a~%" (second tabuleiro))    
+    (format t "~a~%" (third tabuleiro))    
+    (format t "~a~%" (fourth tabuleiro))    
+    (format t "~a~%" (fifth tabuleiro))    
+    (format t "~a~%" (sixth tabuleiro))    
+    (format t "~a~%" (seventh tabuleiro))
+    (format t "~a~%" (eighth tabuleiro))
+    (format t "~a~%" (ninth tabuleiro))
+    (format t "~a~%" (tenth tabuleiro))
 )
