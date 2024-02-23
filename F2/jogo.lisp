@@ -141,18 +141,18 @@
 (defun jogada (tabuleiro pos player)
         (substituir (first pos) (second pos) 
         (substituir-simetrico 
-            (celula (second pos) (first pos) lista) 
-            (substituir (first pos) (second pos) lista NIL))
+            (celula (second pos) (first pos) tabuleiro) 
+            (substituir (first pos) (second pos) tabuleiro NIL))
     player)
 )
 
 (defun operador (tabuleiro coluna linha player)
     (let (
-            (pos (if (posicao-player tabuleiro) (posicao-player tabuleiro) (coluna linha)))
+            (pos (if (posicao-player tabuleiro player) (posicao-player tabuleiro player) (list coluna linha)))
         )
         (cond
-            ((equal pos (list coluna linha)) (jogada pos player))
-            ((posicao-valida tabuleiro (nova-posicao pos coluna linha)) (jogada (nova-posicao pos coluna linha) player))
+            ((equal pos (list coluna linha)) (jogada tabuleiro pos player))
+            ((posicao-valida tabuleiro (nova-posicao pos coluna linha)) (jogada tabuleiro (nova-posicao pos coluna linha) player))
             (T NIL)
         )
     )   
@@ -198,58 +198,39 @@
     (operador tabuleiro -2 1 player)
 )
 
-(defun operador-inicial (tabuleiro coluna linha player)
+(defun operador-inicial (tabuleiro coluna player)
     (operador   tabuleiro 
                 coluna
-                linha
+                (player-starting-line player)
                 player)
-)
-
-
-
-(defun count-numbers (tabuleiro &optional (count 0))
-    (cond
-        ((NULL tabuleiro) count)
-        (T (count-numbers (cdr tabuleiro) (+ count (length (remove-if-not #'(lambda (x) (numberp x)) (car tabuleiro))))))
-    )
-)
-
-(defun valor-tabuleiro (tabuleiro)
-    (reduce #'+ (mapcar #'(lambda (x) (reduce #'+ (remove-if-not #'(lambda (y) (numberp y)) x))) tabuleiro))
-)
-
-(defun print-tabuleiro (tabuleiro)
-    (format t "   A  B  C  D  E  F  G  H  I  J~%")
-    (format t "1  ~a~%" (print-line (first tabuleiro)))
-    (format t "2  ~a~%" (print-line (second tabuleiro)))    
-    (format t "3  ~a~%" (print-line (third tabuleiro)))  
-    (format t "4  ~a~%" (print-line (fourth tabuleiro)))    
-    (format t "5  ~a~%" (print-line (fifth tabuleiro)))    
-    (format t "6  ~a~%" (print-line (sixth tabuleiro)))    
-    (format t "7  ~a~%" (print-line (seventh tabuleiro)))
-    (format t "8  ~a~%" (print-line (eighth tabuleiro)))
-    (format t "9  ~a~%" (print-line (ninth tabuleiro)))
-    (format t "10 ~a~%" (print-line (tenth tabuleiro)))
-)
-
-(defun print-line (linha)
-    (format nil "~2,'0d ~2,'0d ~2,'0d ~2,'0d ~2,'0d ~2,'0d ~2,'0d ~2,'0d ~2,'0d ~2,'0d" 
-        (first linha)
-        (second linha)
-        (third linha)
-        (fourth linha)
-        (fifth linha)
-        (sixth linha)
-        (seventh linha)
-        (eighth linha)
-        (ninth linha)
-        (tenth linha))
 )
 
 (defun numero-letra (letra)
     (- (char-code (coerce letra 'character)) (char-code #\A))
 )
 
-(defun game-overp (tabuleiro operadores player)
-    (NULL (operadores-validos operadores tabuleiro player))
+(defun game-overp (operadores)
+    (NULL operadores)
+)
+
+(defun troca-player (player)
+    (- (- player) 3)
+)
+
+(defun player-starting-line (player)
+    (- (* (- player) 9) 9)
+)
+
+(defun jogo (player tabuleiro &optional (operadores (operadores)))
+    (let ((operadores-validos (operadores-validos operadores tabuleiro player)))
+        (cond ((game-overp operadores-validos) (troca-player player))
+            (T (progn
+                (print-tabuleiro tabuleiro)
+                (print (format nil "Player ~a~%" player))
+                (jogo (troca-player player) 
+                    (funcall (ler-operador operadores-validos) tabuleiro player) 
+                    operadores)
+            ))
+        )
+    )
 )
