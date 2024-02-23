@@ -138,26 +138,28 @@
 ;;    )
 ;;)
 
-(defun operador (lista x y)
+(defun jogada (tabuleiro pos player)
+        (substituir (first pos) (second pos) 
+        (substituir-simetrico 
+            (celula (second pos) (first pos) lista) 
+            (substituir (first pos) (second pos) lista NIL))
+    player)
+)
+
+(defun operador (tabuleiro coluna linha player)
     (let (
-            (pos (posicao-player lista))
+            (pos (if (posicao-player tabuleiro) (posicao-player tabuleiro) (coluna linha)))
         )
         (cond
-            ((not pos) NIL)
-            ((not (posicao-valida lista (nova-posicao pos x y))) NIL)
-            (T 
-                (substituir (first (nova-posicao pos x y)) (second (nova-posicao pos x y)) 
-                    (substituir-simetrico 
-                        (celula (second (nova-posicao pos x y)) (first (nova-posicao pos x y)) lista) 
-                        (substituir (first pos) (second pos) lista NIL))
-                T)
-            )
+            ((equal pos (list coluna linha)) (jogada pos player))
+            ((posicao-valida tabuleiro (nova-posicao pos coluna linha)) (jogada (nova-posicao pos coluna linha) player))
+            (T NIL)
         )
     )   
 )
 
-(defun operadores-validos (operadores lista player)
-    (remove-if #'(lambda (x) (not (funcall x lista player))) operadores)
+(defun operadores-validos (operadores tabuleiro player)
+    (remove-if #'(lambda (x) (not (funcall x tabuleiro player))) operadores)
 )
 
 (defun operadores ()
@@ -165,42 +167,42 @@
 )
 
 (defun operador-1 (tabuleiro player)
-    (operador lista -1 2 player)
+    (operador tabuleiro -1 2 player)
 )
 
 (defun operador-2 (tabuleiro player)
-    (operador lista 1 2 player)
+    (operador tabuleiro 1 2 player)
 )
 
 (defun operador-3 (tabuleiro player)
-    (operador lista 2 1 player)
+    (operador tabuleiro 2 1 player)
 )
 
 (defun operador-4 (tabuleiro player)
-    (operador lista 2 -1 player)
+    (operador tabuleiro 2 -1 player)
 )
 
 (defun operador-5 (tabuleiro player)
-    (operador lista 1 -2 player)
+    (operador tabuleiro 1 -2 player)
 )
 
 (defun operador-6 (tabuleiro player)
-    (operador lista -1 -2 player)
+    (operador tabuleiro -1 -2 player)
 )
 
 (defun operador-7 (tabuleiro player)
-    (operador lista -2 -1 player)
+    (operador tabuleiro -2 -1 player)
 )
 
 (defun operador-8 (tabuleiro player)
-    (operador lista -2 1 player)
+    (operador tabuleiro -2 1 player)
 )
 
 (defun operador-inicial (tabuleiro coluna linha player)
-    (substituir 
-        coluna
-        linha
-     tabuleiro player)
+    (operador   tabuleiro 
+                coluna
+                linha
+                player)
 )
 
 

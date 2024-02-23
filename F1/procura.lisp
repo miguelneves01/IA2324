@@ -253,7 +253,8 @@
         ((solucaop no objetivo) (list no (+ (length fechados) (length abertos)) (length fechados) (float (/ (apply #'+ ramificacoes) (length ramificacoes)))))
         ((null abertos) nil)
         ((OR (no-existep no fechados) (game-overp no operadores))
-            (funcall sorting 
+            (algoritmo
+                sorting
                 (car abertos) 
                 (cdr abertos) 
                 objetivo
@@ -264,7 +265,8 @@
         )
         (T 
          (let ((new-abertos (sucessores no (operadores-validos operadores (no-tabuleiro no)))))
-            (funcall sorting 
+            (algoritmo
+                sorting
                 (car (funcall sorting abertos new-abertos)) 
                 (cdr (funcall sorting abertos new-abertos))
                 objetivo 
