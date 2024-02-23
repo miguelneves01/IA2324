@@ -203,12 +203,7 @@
      lista T)
 )
 
-(defun game-overp (no operadores)
-    (cond 
-        ((NULL (operadores-validos operadores (no-tabuleiro no))) T)
-        (T NIL)
-    )
-)
+
 
 (defun count-numbers (tabuleiro &optional (count 0))
     (cond

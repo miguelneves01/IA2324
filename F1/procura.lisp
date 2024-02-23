@@ -135,6 +135,13 @@
     )
 )
 
+(defun game-overp (no operadores)
+    (cond 
+        ((NULL (operadores-validos operadores (no-tabuleiro no))) T)
+        (T NIL)
+    )
+)
+
 ;; Ordenacao DFS
 
 (defun abertos-dfs (nos-abertos nos-sucessores)
@@ -257,7 +264,7 @@
         )
         (T 
          (let ((new-abertos (sucessores no (operadores-validos operadores (no-tabuleiro no)))))
-            (dfs2 
+            (funcall sorting 
                 (car (funcall sorting abertos new-abertos)) 
                 (cdr (funcall sorting abertos new-abertos))
                 objetivo 
