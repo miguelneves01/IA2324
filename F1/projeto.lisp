@@ -29,7 +29,7 @@
 (defun escrever-aleatorio ()
     (with-open-file 
         (file *problemas* :direction :output :if-exists :append)
-        (format file "~a" (tabuleiro-aleatorio))
+        (format file "~%~a" (tabuleiro-aleatorio))
     )
 )
 
@@ -58,6 +58,19 @@
         (1 'heuristica-maiorvalor)
         (2 'heuristica-dada)
     )
+)
+
+(defun print-tabuleiro (tabuleiro)
+    (format t "~a~%" (first tabuleiro))
+    (format t "~a~%" (second tabuleiro))    
+    (format t "~a~%" (third tabuleiro))    
+    (format t "~a~%" (fourth tabuleiro))    
+    (format t "~a~%" (fifth tabuleiro))    
+    (format t "~a~%" (sixth tabuleiro))    
+    (format t "~a~%" (seventh tabuleiro))
+    (format t "~a~%" (eighth tabuleiro))
+    (format t "~a~%" (ninth tabuleiro))
+    (format t "~a~%" (tenth tabuleiro))
 )
 
 (defun init ()

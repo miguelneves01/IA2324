@@ -197,13 +197,12 @@
 )
 
 (defun operador-inicial (lista &optional (casa 0))
-    (substituir 
-        casa
-        0
-     lista T)
+    (substituir casa 0
+        (substituir-simetrico 
+            (celula 0 casa lista) 
+            lista)
+    T)
 )
-
-
 
 (defun count-numbers (tabuleiro &optional (count 0))
     (cond
@@ -214,17 +213,4 @@
 
 (defun valor-tabuleiro (tabuleiro)
     (reduce #'+ (mapcar #'(lambda (x) (reduce #'+ (remove-if-not #'(lambda (y) (numberp y)) x))) tabuleiro))
-)
-
-(defun print-tabuleiro (tabuleiro)
-    (format t "~a~%" (first tabuleiro))
-    (format t "~a~%" (second tabuleiro))    
-    (format t "~a~%" (third tabuleiro))    
-    (format t "~a~%" (fourth tabuleiro))    
-    (format t "~a~%" (fifth tabuleiro))    
-    (format t "~a~%" (sixth tabuleiro))    
-    (format t "~a~%" (seventh tabuleiro))
-    (format t "~a~%" (eighth tabuleiro))
-    (format t "~a~%" (ninth tabuleiro))
-    (format t "~a~%" (tenth tabuleiro))
 )
