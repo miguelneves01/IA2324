@@ -233,6 +233,7 @@
             (cond 
                 ((not solucao) "~%Solucao nao encontrada ~%")
                 (T 
+                (format t "~%Profundidade: ~d"  (no-profundidade (first solucao)))
                 (format t "~%Nos Gerados: ~d"  (second solucao))
                 (format t "~%Nos Expandidos: ~d" (third solucao))
                 (format t "~%Fator de Ramificacao Medio: ~d" (fourth solucao))
@@ -286,6 +287,7 @@
             (cond 
                 ((not solucao) "~%Solucao nao encontrada ~%")
                 (T 
+                (format t "~%Profundidade: ~d"  (no-profundidade (first solucao)))
                 (format t "~%Nos Gerados: ~d"  (second solucao))
                 (format t "~%Nos Expandidos: ~d" (third solucao))
                 (format t "~%Fator de Ramificacao Medio: ~d" (fourth solucao))
