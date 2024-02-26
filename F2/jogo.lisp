@@ -2,7 +2,7 @@
     (nth y tabuleiro)
 )
 
-(defun celula (y x tabuleiro)
+(defun celula (x y tabuleiro)
     (nth x (linha y tabuleiro))
 )
 
@@ -78,7 +78,7 @@
 )
 
 (defun existep (lista value)
-    (and (not (first (posicao value lista))) (not (second (posicao value lista)))) 
+    (and (first (posicao value lista)) (second (posicao value lista))) 
 )
 
 (defun substituir-duplo-max (lista-duplos lista)
@@ -111,6 +111,10 @@
    )
 )
 
+(defun nova-posicao-pos-operador (tabuleiro operador player)
+    (posicao-player (funcall operador tabuleiro player) player)
+)
+
 (defun posicao-valida (lista pos)
     (cond
         ((not lista) NIL)
@@ -119,7 +123,7 @@
         ((not (second pos)) NIL)
         ((or (< (first pos) 0) (< (second pos) 0)) NIL)
         ((or (> (first pos) 9) (> (second pos) 9)) NIL)
-        ((not (celula (second pos) (first pos) lista)) NIL)
+        ((not (celula (first pos) (second pos) lista)) NIL)
         (T T)
     )
 )
@@ -128,38 +132,37 @@
     (cond
         ((not lista) NIL)
         ((not pos) NIL)
-        (T (celula (second pos) (first pos) lista))
+        (T (celula (first pos) (second pos) lista))
     )
 )
 
-;;(defun posicoes-iniciais (lista)
-;;    (let ((pos-possiveis (lista-numeros 10)))
-;;        (remove-if #'(lambda (x) (not (posicao-valida lista (list x 0)))) pos-possiveis)
-;;    )
-;;)
-
-(defun jogada (tabuleiro pos player)
-        (substituir (first pos) (second pos) 
+(defun jogada (tabuleiro pos nova-pos player)
+        (substituir (first nova-pos) (second nova-pos) 
         (substituir-simetrico 
-            (celula (second pos) (first pos) tabuleiro) 
+            (celula (first nova-pos) (second nova-pos) tabuleiro) 
             (substituir (first pos) (second pos) tabuleiro NIL))
     player)
 )
 
 (defun operador (tabuleiro coluna linha player)
     (let (
-            (pos (if (posicao-player tabuleiro player) (posicao-player tabuleiro player) (list coluna linha)))
+            (pos (posicao-player tabuleiro player))
         )
-        (cond
-            ((equal pos (list coluna linha)) (jogada tabuleiro pos player))
-            ((posicao-valida tabuleiro (nova-posicao pos coluna linha)) (jogada tabuleiro (nova-posicao pos coluna linha) player))
-            (T NIL)
-        )
+            (if (posicao-valida tabuleiro (nova-posicao pos coluna linha)) (jogada tabuleiro pos (nova-posicao pos coluna linha) player) NIL)
     )   
 )
 
-(defun operadores-validos (operadores tabuleiro player)
-    (remove-if #'(lambda (x) (not (funcall x tabuleiro player))) operadores)
+(defun operadores-validos (operadores tabuleiro player &optional 
+                                      (posicoes (posicoes-validas operadores tabuleiro player (posicoes-validas operadores tabuleiro (troca-player player)))))
+    (remove-if #'(lambda (x) (or (not (funcall x tabuleiro player)) 
+                                 (not (member (posicao-player (funcall x tabuleiro player) player) posicoes :test #'equal)))
+                ) operadores
+    )
+)
+
+(defun posicoes-validas (operadores tabuleiro player &optional (posicoes '()))
+    (remove-if #'(lambda (x) (or (not x) (member x posicoes :test #'equal))) 
+        (mapcar #'(lambda (op) (nova-posicao-pos-operador tabuleiro op player)) operadores))
 )
 
 (defun operadores ()
@@ -199,14 +202,19 @@
 )
 
 (defun operador-inicial (tabuleiro coluna player)
-    (operador   tabuleiro 
-                coluna
-                (player-starting-line player)
-                player)
+    (substituir coluna (player-starting-line player) 
+        (substituir-simetrico 
+            (celula coluna (player-starting-line player) tabuleiro) 
+            tabuleiro)
+    player)
 )
 
-(defun numero-letra (letra)
+(defun letra-numero (letra)
     (- (char-code (coerce letra 'character)) (char-code #\A))
+)
+
+(defun numero-letra (numero)
+    (code-char (+ numero (char-code #\A)))
 )
 
 (defun game-overp (operadores)
@@ -221,16 +229,128 @@
     (- (* (- player) 9) 9)
 )
 
-(defun jogo (player tabuleiro &optional (operadores (operadores)))
+(defun criar-no (tabuleiro player &optional (score 0))
+    (list tabuleiro player score)
+)
+
+(defun no-player (no)
+    (second no)
+)
+
+(defun no-tabuleiro (no)
+    (first no)
+)
+
+(defun no-score (no)
+    (third no)
+)
+(defun jogada-inicial (tabuleiro &optional (player -1) (scores '(0 0)) (count 0))
+    (cond
+        ((= count 2) (criar-no tabuleiro player scores))
+        (T
+            (print-tabuleiro tabuleiro)
+            (format t "Jogador ~d escolha a coluna (A-J):" (- player))
+            (let ((novo-tabuleiro (operador-inicial tabuleiro (letra-numero (read)) player)))
+            (jogada-inicial 
+                novo-tabuleiro 
+                (troca-player player) 
+                (add-score-to-player player scores (valor-posicao tabuleiro (posicao-player novo-tabuleiro player)))
+                (+ count 1))
+            )
+        )
+    )
+)
+(defun jogada-inicial-player-ai (tabuleiro &optional (ai -2) (player -1) (scores '(0 0)) (count 0))
+    (cond
+        ((= count 2) (criar-no tabuleiro player scores))
+        (T 
+            (progn
+                (print-tabuleiro tabuleiro)
+                (format t "Jogador ~d escolha a coluna (A-J):" (- player))
+                ( if (equal player ai)
+                    (let ((novo-tabuleiro (operador-inicial tabuleiro (escolher-aleatorio (lista-numeros 10)) player)))
+                        (jogada-inicial-player-ai 
+                            novo-tabuleiro
+                            ai 
+                            (troca-player player)
+                            (add-score-to-player player scores (valor-posicao tabuleiro (posicao-player novo-tabuleiro player)))
+                            (+ count 1))
+                    )
+                    (let ((novo-tabuleiro (operador-inicial tabuleiro (letra-numero (read)) player)))
+                            (jogada-inicial-player-ai 
+                                novo-tabuleiro 
+                                ai 
+                                (troca-player player)
+                                (add-score-to-player player scores (valor-posicao tabuleiro (posicao-player novo-tabuleiro player)))
+                                (+ count 1)
+                            )
+                    )
+                )
+            )
+        )
+    )
+)
+
+(defun player-player (no &optional (tabuleiro (no-tabuleiro no)) (player (no-player no)) (pontos (no-score no)) (operadores (operadores)))
     (let ((operadores-validos (operadores-validos operadores tabuleiro player)))
-        (cond ((game-overp operadores-validos) (troca-player player))
+        (cond ((game-overp operadores-validos) (no-score no))
             (T (progn
                 (print-tabuleiro tabuleiro)
-                (print (format nil "Player ~a~%" player))
-                (jogo (troca-player player) 
-                    (funcall (ler-operador operadores-validos) tabuleiro player) 
-                    operadores)
-            ))
+                (format t "Player ~a (~a) to play!~%Score: P1-~d : ~d-P2~%" (- player) (print-posicao (posicao-player tabuleiro player)) (first pontos) (second pontos))
+                (let ((novo-tabuleiro (funcall (ler-operador operadores-validos (posicoes-validas operadores-validos tabuleiro player)) tabuleiro player)))
+                (player-player
+                    (criar-no 
+                            novo-tabuleiro 
+                            (troca-player player) 
+                            (add-score-to-player player pontos (valor-posicao tabuleiro (posicao-player novo-tabuleiro player)))
+                    )
+                )                  
+                ))
+            )
+        )
+    )
+)
+
+(defun add-score-to-player (player pontos score)
+    (if (equal player -1)
+        (list (+ (first pontos) score) (second pontos))
+        (list (first pontos) (+ (second pontos) score))
+    )
+)
+
+(defun player-only (tabuleiro)
+    (player-player (jogada-inicial tabuleiro))
+)
+
+(defun player-ai (tabuleiro)
+    (player-ai-game (jogada-inicial-player-ai tabuleiro -2) -2)
+)
+
+(defun ai-player (tabuleiro)
+    (player-ai-game (jogada-inicial-player-ai  tabuleiro -1) -1)
+)
+
+(defun player-ai-game (no &optional (ai -2) (tabuleiro (no-tabuleiro no)) (player (no-player no)) (pontos (no-score no)) (operadores (operadores)))
+    (let ((operadores-validos (operadores-validos operadores tabuleiro player)))
+        (cond ((game-overp operadores-validos) pontos)
+            (T 
+                (print-tabuleiro tabuleiro)
+                (format t "Player ~a (~a) to play!~%Score: P1-~d : ~d-P2~%" (- player) (print-posicao (posicao-player tabuleiro player)) (first pontos) (second pontos))
+                (let ((novo-tabuleiro (if (equal player ai) 
+                                      (funcall (escolher-aleatorio (operadores-validos (operadores) tabuleiro player)) tabuleiro player)
+                                      (funcall (ler-operador operadores-validos (posicoes-validas operadores-validos tabuleiro player)) tabuleiro player)
+                                )
+                    ))
+                    (player-ai-game
+                        (criar-no 
+                            novo-tabuleiro 
+                            (troca-player player) 
+                            (add-score-to-player player pontos (valor-posicao tabuleiro (posicao-player novo-tabuleiro player)))
+                        )
+                        ai
+                    )
+                )                  
+            )
         )
     )
 )
