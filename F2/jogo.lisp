@@ -229,24 +229,9 @@
     (- (* (- player) 9) 9)
 )
 
-(defun criar-no (tabuleiro player &optional (score 0))
-    (list tabuleiro player score)
-)
-
-(defun no-player (no)
-    (second no)
-)
-
-(defun no-tabuleiro (no)
-    (first no)
-)
-
-(defun no-score (no)
-    (third no)
-)
 (defun jogada-inicial (tabuleiro &optional (player -1) (scores '(0 0)) (count 0))
     (cond
-        ((= count 2) (criar-no tabuleiro player scores))
+        ((= count 2) (list tabuleiro player scores))
         (T
             (print-tabuleiro tabuleiro)
             (format t "Jogador ~d escolha a coluna (A-J):" (- player))
@@ -262,7 +247,7 @@
 )
 (defun jogada-inicial-player-ai (tabuleiro &optional (ai -2) (player -1) (scores '(0 0)) (count 0))
     (cond
-        ((= count 2) (criar-no tabuleiro player scores))
+        ((= count 2) (list tabuleiro player scores))
         (T 
             (progn
                 (print-tabuleiro tabuleiro)
@@ -299,7 +284,7 @@
                 (format t "Player ~a (~a) to play!~%Score: P1-~d : ~d-P2~%" (- player) (print-posicao (posicao-player tabuleiro player)) (first pontos) (second pontos))
                 (let ((novo-tabuleiro (funcall (ler-operador operadores-validos (posicoes-validas operadores-validos tabuleiro player)) tabuleiro player)))
                 (player-player
-                    (criar-no 
+                    (list
                             novo-tabuleiro 
                             (troca-player player) 
                             (add-score-to-player player pontos (valor-posicao tabuleiro (posicao-player novo-tabuleiro player)))
@@ -311,12 +296,6 @@
     )
 )
 
-(defun add-score-to-player (player pontos score)
-    (if (equal player -1)
-        (list (+ (first pontos) score) (second pontos))
-        (list (first pontos) (+ (second pontos) score))
-    )
-)
 
 (defun player-only (tabuleiro)
     (player-player (jogada-inicial tabuleiro))
@@ -330,7 +309,7 @@
     (player-ai-game (jogada-inicial-player-ai  tabuleiro -1) -1)
 )
 
-(defun player-ai-game (no &optional (ai -2) (tabuleiro (no-tabuleiro no)) (player (no-player no)) (pontos (no-score no)) (operadores (operadores)))
+(defun player-ai-game (no &optional (ai -2) (tabuleiro (first no)) (player (second no)) (pontos (third no)) (operadores (operadores)))
     (let ((operadores-validos (operadores-validos operadores tabuleiro player)))
         (cond ((game-overp operadores-validos) pontos)
             (T 
@@ -342,7 +321,7 @@
                                 )
                     ))
                     (player-ai-game
-                        (criar-no 
+                        (list 
                             novo-tabuleiro 
                             (troca-player player) 
                             (add-score-to-player player pontos (valor-posicao tabuleiro (posicao-player novo-tabuleiro player)))
