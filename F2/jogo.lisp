@@ -406,7 +406,3 @@
 (defun ai-ai (tabuleiro tempo)
     (ai-ai-game (jogada-inicial-ai-ai tabuleiro) tempo) 
 )
-
-(defun jogar (tabuleiro tempo &optional (player -1) )
-    (funcall (no-melhor-jogada (alphabeta (no-inicial (list tabuleiro player '(0 0))) T 100 (+ tempo (get-internal-real-time)))) tabuleiro player)
-)
