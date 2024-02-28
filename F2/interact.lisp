@@ -1,3 +1,15 @@
+#|
+    Unidade Curricular de Inteligência Artificial
+        Docentes:
+        Prof. Joaquim Filipe
+        Eng. Filipe Mariano
+
+    Jogo do Cavalo
+    Projeto realizado por Grupo 51:
+        Miguel Neves - 201900377
+        Guilherme Ravasco - 201900646
+ |#
+
 (load (merge-pathnames "jogo.lisp" *compile-file-pathname*))
 (load (merge-pathnames "algoritmo.lisp" *compile-file-pathname*))
 (defvar *log* (merge-pathnames "log.dat" *compile-file-pathname*))

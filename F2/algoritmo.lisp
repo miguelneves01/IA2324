@@ -1,3 +1,15 @@
+#|
+    Unidade Curricular de Inteligência Artificial
+        Docentes:
+        Prof. Joaquim Filipe
+        Eng. Filipe Mariano
+
+    Jogo do Cavalo
+    Projeto realizado por Grupo 51:
+        Miguel Neves - 201900377
+        Guilherme Ravasco - 201900646
+ |#
+
 (defun criar-no (tabuleiro player score &optional (profundidade 0) (maximizing T) (operadores-utilizados '()))
     (list tabuleiro player score profundidade
           (if maximizing (evaluate-scores score (troca-player player)) (evaluate-scores score player))
