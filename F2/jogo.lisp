@@ -13,6 +13,12 @@
     )
 )
 
+(defun posicoes-iniciais (lista)
+    (let ((pos-possiveis (lista-numeros 10)))
+        (remove-if #'(lambda (x) (not (posicao-valida lista (list x 0)))) pos-possiveis)
+    )
+)
+
 (defun lista-duplos ( &optional (n 10) (lista '()) (num 0))
     (cond
         ((= num n) lista)
@@ -236,8 +242,9 @@
         ((= count 2) (list tabuleiro player scores))
         (T
             (print-tabuleiro tabuleiro)
-            (format t "Jogador ~d escolha a coluna (A-J):" (- player))
+            (log-message (format nil "Jogador ~d escolha a coluna (A-J):~%" (- player)))
             (let ((novo-tabuleiro (operador-inicial tabuleiro (letra-numero (read)) player)))
+            (log-message (format nil "Player ~a moveu-se para ~a!~%" (- player) (print-posicao (posicao-player novo-tabuleiro player))))
             (jogada-inicial 
                 novo-tabuleiro 
                 (troca-player player) 
@@ -249,21 +256,24 @@
 )
 (defun jogada-inicial-player-ai (tabuleiro &optional (ai -2) (player -1) (scores '(0 0)) (count 0))
     (cond
-        ((= count 2) (format t "~%")(list tabuleiro player scores))
+        ((= count 2)(list tabuleiro player scores))
         (T 
             (progn
                 (print-tabuleiro tabuleiro)
-                (format t "Jogador ~d escolha a coluna (A-J):" (- player))
+                (log-message (format nil "Jogador ~d escolha a coluna (A-J):~%" (- player)))
                 ( if (equal player ai)
-                    (let ((novo-tabuleiro (operador-inicial tabuleiro (escolher-aleatorio (lista-numeros 10)) player)))
-                        (jogada-inicial-player-ai 
-                            novo-tabuleiro
-                            ai 
-                            (troca-player player)
-                            (add-score-to-player player scores (valor-posicao tabuleiro (posicao-player novo-tabuleiro player)))
-                            (+ count 1))
+                    (let ((novo-tabuleiro (operador-inicial tabuleiro (escolher-aleatorio (posicoes-iniciais tabuleiro)) player)))
+                    (log-message (format nil "Player ~a moveu-se para ~a!~%" (- player) (print-posicao (posicao-player novo-tabuleiro player))))
+                            (jogada-inicial-player-ai 
+                                novo-tabuleiro
+                                ai 
+                                (troca-player player)
+                                (add-score-to-player player scores (valor-posicao tabuleiro (posicao-player novo-tabuleiro player)))
+                                (+ count 1)
+                        )
                     )
                     (let ((novo-tabuleiro (operador-inicial tabuleiro (letra-numero (read)) player)))
+                    (log-message (format nil "Player ~a moveu-se para ~a!~%" (- player) (print-posicao (posicao-player novo-tabuleiro player))))
                             (jogada-inicial-player-ai 
                                 novo-tabuleiro 
                                 ai 
@@ -279,19 +289,19 @@
 )
 (defun jogada-inicial-ai-ai (tabuleiro &optional (player -1) (scores '(0 0)) (count 0))
     (cond
-        ((= count 2) (format t "~%")(list tabuleiro player scores))
+        ((= count 2)(list tabuleiro player scores))
         (T 
             (progn
                 (print-tabuleiro tabuleiro)
-                (format t "Jogador ~d escolha a coluna (A-J):~%" (- player))
-
-                    (let ((novo-tabuleiro (operador-inicial tabuleiro (escolher-aleatorio (lista-numeros 10)) player)))
-                        (jogada-inicial-ai-ai 
-                            novo-tabuleiro
-                            (troca-player player)
-                            (add-score-to-player player scores (valor-posicao tabuleiro (posicao-player novo-tabuleiro player)))
-                            (+ count 1))
-                    )
+                (log-message (format nil "Jogador ~d escolha a coluna (A-J):" (- player)))
+                (let ((novo-tabuleiro (operador-inicial tabuleiro (escolher-aleatorio (posicoes-iniciais tabuleiro)) player)))
+                    (log-message (format nil "~%Player ~a moveu-se para ~a!~%" (- player) (print-posicao (posicao-player novo-tabuleiro player))))
+                    (jogada-inicial-ai-ai 
+                        novo-tabuleiro
+                        (troca-player player)
+                        (add-score-to-player player scores (valor-posicao tabuleiro (posicao-player novo-tabuleiro player)))
+                        (+ count 1))
+                )
             )
         )
     )
@@ -302,15 +312,16 @@
         (cond ((game-overp operadores-validos) (no-score no))
             (T (progn
                 (print-tabuleiro tabuleiro)
-                (format t "Player ~a (~a) to play!~%Score: P1-~d : ~d-P2~%" (- player) (print-posicao (posicao-player tabuleiro player)) (first pontos) (second pontos))
+                (log-message (format nil "Score: P1-~d : P2-~d~%Player ~a (~a) a jogar!~%" (first pontos) (second pontos) (- player) (print-posicao (posicao-player tabuleiro player)) ))
                 (let ((novo-tabuleiro (funcall (ler-operador operadores-validos (posicoes-validas operadores-validos tabuleiro player)) tabuleiro player)))
-                (player-player
-                    (list
-                        novo-tabuleiro 
-                        (troca-player player) 
-                        (add-score-to-player player pontos (valor-posicao tabuleiro (posicao-player novo-tabuleiro player)))
-                    )
-                )                  
+                    (log-message (format nil "Player ~a moveu-se para ~a!~%" (- player) (print-posicao (posicao-player novo-tabuleiro player))))
+                    (player-player
+                        (list
+                            novo-tabuleiro 
+                            (troca-player player) 
+                            (add-score-to-player player pontos (valor-posicao tabuleiro (posicao-player novo-tabuleiro player)))
+                        )
+                    )                  
                 ))
             )
         )
@@ -322,12 +333,13 @@
         (cond ((game-overp operadores-validos) pontos)
             (T 
                 (print-tabuleiro tabuleiro)
-                (format t "Player ~a (~a) to play!~%Score: P1-~d : ~d-P2~%" (- player) (print-posicao (posicao-player tabuleiro player)) (first pontos) (second pontos))
+                (log-message (format nil "Score: P1-~d : P2-~d~%Player ~a (~a) a jogar!~%" (first pontos) (second pontos) (- player) (print-posicao (posicao-player tabuleiro player)) ))
                 (let ((novo-tabuleiro (if (equal player ai) 
                                       (funcall (no-melhor-jogada (alphabeta (no-inicial no) T prof-max (+ tempo (get-internal-real-time)))) tabuleiro player)
                                       (funcall (ler-operador operadores-validos (posicoes-validas operadores-validos tabuleiro player)) tabuleiro player)
                                 )
                     ))
+                    (log-message (format nil "Player ~a moveu-se para ~a!~%" (- player) (print-posicao (posicao-player novo-tabuleiro player))))
                     (player-ai-game
                         (list 
                             novo-tabuleiro 
@@ -349,8 +361,9 @@
         (cond ((game-overp operadores-validos) pontos)
             (T 
                 (print-tabuleiro tabuleiro)
-                (format t "Player ~a (~a) to play!~%Score: P1-~d : ~d-P2~%" (- player) (print-posicao (posicao-player tabuleiro player)) (first pontos) (second pontos))
+                (log-message (format nil "Score: P1-~d : P2-~d~%Player ~a (~a) a jogar!~%" (first pontos) (second pontos) (- player) (print-posicao (posicao-player tabuleiro player)) ))
                 (let ((novo-tabuleiro (funcall (no-melhor-jogada (alphabeta (no-inicial no) T prof-max (+ tempo (get-internal-real-time)))) tabuleiro player)))
+                    (log-message (format nil "Player ~a moveu-se para ~a!~%" (- player) (print-posicao (posicao-player novo-tabuleiro player))))
                     (ai-ai-game
                         (list 
                             novo-tabuleiro 
@@ -380,4 +393,8 @@
 
 (defun ai-ai (tabuleiro tempo)
     (ai-ai-game (jogada-inicial-ai-ai tabuleiro) tempo) 
+)
+
+(defun jogar (tabuleiro tempo &optional (player -1) )
+    (funcall (no-melhor-jogada (alphabeta (no-inicial (list tabuleiro player '(0 0))) T 100 (+ tempo (get-internal-real-time)))) tabuleiro player)
 )
