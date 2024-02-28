@@ -90,3 +90,11 @@
         (log-message (format nil "Vencedor: Player ~d" (if (> (first resultado) (second resultado)) 1 2)))
     )
 )
+
+(defun jogar (tabuleiro tempo &optional (player -1))
+    (with-open-file 
+        (file *log* :direction :output :if-exists :append :if-does-not-exist :create :version :newest)
+        (format file "Tempo: ~d ms~%~%" tempo)
+    )
+    (funcall (no-melhor-jogada (alphabeta (no-inicial (list tabuleiro player '(0 0))) T 100 (+ tempo (get-internal-real-time)))) tabuleiro player)
+)
