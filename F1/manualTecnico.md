@@ -28,8 +28,8 @@ Projeto realizado por Grupo 51:
 
 # 1. Introdução
 Este projeto tem como objetivo realizar um programa para resolver o **Jogo do Cavalo** com alguns algoritmos de busca desenvolvidos em **Common Lisp**. Os algoritmos de busca utilizados para resolver este jogo foram, o BFS (Procura em Largura), o DFS (Procura em Profundidade) e o algoritmo A*.
-O **Jogo do Cavalo** é uma variante do problema matmático conhecido como o **Passeio do Cavalo**, onde o objetivo é, através dos movimentos do cavlo, conseguir visitar todas as casas de um tabuleiro parecido ao de xadrez.
-Esta versão decorrerá num tabuleiro de 10 linhas e 10 colunas (10x10), onde cada casa possui uma pontuação. Estes movimentos são implementados como operadores em **LISP**.
+O **Jogo do Cavalo** é uma variante do problema matemático conhecido como o **Passeio do Cavalo**, onde o objetivo é, através dos movimentos do cavalo, conseguir visitar todas as casas de um tabuleiro parecido ao de xadrez.
+Esta versão decorrerá num tabuleiro de 10 linhas e 10 colunas (10x10), onde cada casa possui uma pontuação. Estes movimentos são implementados com operadores em **LISP**.
 O projeto propõe a resolução de problemas de A a F, adicionalmente tem um problema G, que é fornecido pelo docente na hora da discussão do projeto, que estão anexados no final do enunciado do projeto, cada um representa um desafio para o **Jogo do Cavalo**.
 Para conseguir a solução mais eficiente de cada problema, são utilizados os algoritmos de busca, a procura em largura explora o espaço de estados, a procura em profundidade explora as possibilidades em profundidade e o algoritmo A* utiliza uma heurística para conseguir guiar a procura pelo resultado mais eficiente.
 
