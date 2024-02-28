@@ -95,11 +95,13 @@
 )
 
 (defun substituir-simetrico (num lista)
-    (let ((duplos (remove-if #'(lambda (x) (= x num)) (lista-duplos))))
-        (cond 
-            ((and (duplop num) (> (length duplos) 0)) (substituir-duplo-max (reverse duplos) lista))
-            ((not (existep lista (simetrico num))) lista)
-            (T (substituir (first (posicao (simetrico num) lista)) (second (posicao (simetrico num) lista)) lista))
+    (if (not num) lista
+        (let ((duplos (remove-if #'(lambda (x) (= x num)) (lista-duplos))))
+            (cond 
+                ((and (duplop num) (> (length duplos) 0)) (substituir-duplo-max (reverse duplos) lista))
+                ((not (existep lista (simetrico num))) lista)
+                (T (substituir (first (posicao (simetrico num) lista)) (second (posicao (simetrico num) lista)) lista))
+            )
         )
     )
 )
@@ -247,7 +249,7 @@
 )
 (defun jogada-inicial-player-ai (tabuleiro &optional (ai -2) (player -1) (scores '(0 0)) (count 0))
     (cond
-        ((= count 2) (list tabuleiro player scores))
+        ((= count 2) (format t "~%")(list tabuleiro player scores))
         (T 
             (progn
                 (print-tabuleiro tabuleiro)
@@ -275,6 +277,25 @@
         )
     )
 )
+(defun jogada-inicial-ai-ai (tabuleiro &optional (player -1) (scores '(0 0)) (count 0))
+    (cond
+        ((= count 2) (format t "~%")(list tabuleiro player scores))
+        (T 
+            (progn
+                (print-tabuleiro tabuleiro)
+                (format t "Jogador ~d escolha a coluna (A-J):~%" (- player))
+
+                    (let ((novo-tabuleiro (operador-inicial tabuleiro (escolher-aleatorio (lista-numeros 10)) player)))
+                        (jogada-inicial-ai-ai 
+                            novo-tabuleiro
+                            (troca-player player)
+                            (add-score-to-player player scores (valor-posicao tabuleiro (posicao-player novo-tabuleiro player)))
+                            (+ count 1))
+                    )
+            )
+        )
+    )
+)
 
 (defun player-player (no &optional (tabuleiro (no-tabuleiro no)) (player (no-player no)) (pontos (no-score no)) (operadores (operadores)))
     (let ((operadores-validos (operadores-validos operadores tabuleiro player)))
@@ -285,9 +306,9 @@
                 (let ((novo-tabuleiro (funcall (ler-operador operadores-validos (posicoes-validas operadores-validos tabuleiro player)) tabuleiro player)))
                 (player-player
                     (list
-                            novo-tabuleiro 
-                            (troca-player player) 
-                            (add-score-to-player player pontos (valor-posicao tabuleiro (posicao-player novo-tabuleiro player)))
+                        novo-tabuleiro 
+                        (troca-player player) 
+                        (add-score-to-player player pontos (valor-posicao tabuleiro (posicao-player novo-tabuleiro player)))
                     )
                 )                  
                 ))
@@ -296,27 +317,14 @@
     )
 )
 
-
-(defun player-only (tabuleiro)
-    (player-player (jogada-inicial tabuleiro))
-)
-
-(defun player-ai (tabuleiro)
-    (player-ai-game (jogada-inicial-player-ai tabuleiro -2) -2)
-)
-
-(defun ai-player (tabuleiro)
-    (player-ai-game (jogada-inicial-player-ai  tabuleiro -1) -1)
-)
-
-(defun player-ai-game (no &optional (ai -2) (tabuleiro (first no)) (player (second no)) (pontos (third no)) (operadores (operadores)))
+(defun player-ai-game (no ai tempo &optional (prof-max 100) (tabuleiro (first no)) (player (second no)) (pontos (third no)) (operadores (operadores)))
     (let ((operadores-validos (operadores-validos operadores tabuleiro player)))
         (cond ((game-overp operadores-validos) pontos)
             (T 
                 (print-tabuleiro tabuleiro)
                 (format t "Player ~a (~a) to play!~%Score: P1-~d : ~d-P2~%" (- player) (print-posicao (posicao-player tabuleiro player)) (first pontos) (second pontos))
                 (let ((novo-tabuleiro (if (equal player ai) 
-                                      (funcall (escolher-aleatorio (operadores-validos (operadores) tabuleiro player)) tabuleiro player)
+                                      (funcall (no-melhor-jogada (alphabeta (no-inicial no) T prof-max (+ tempo (get-internal-real-time)))) tabuleiro player)
                                       (funcall (ler-operador operadores-validos (posicoes-validas operadores-validos tabuleiro player)) tabuleiro player)
                                 )
                     ))
@@ -327,9 +335,49 @@
                             (add-score-to-player player pontos (valor-posicao tabuleiro (posicao-player novo-tabuleiro player)))
                         )
                         ai
+                        tempo
+                        prof-max
                     )
                 )                  
             )
         )
     )
+)
+
+(defun ai-ai-game (no tempo &optional (prof-max 100) (tabuleiro (first no)) (player (second no)) (pontos (third no)) (operadores (operadores)))
+    (let ((operadores-validos (operadores-validos operadores tabuleiro player)))
+        (cond ((game-overp operadores-validos) pontos)
+            (T 
+                (print-tabuleiro tabuleiro)
+                (format t "Player ~a (~a) to play!~%Score: P1-~d : ~d-P2~%" (- player) (print-posicao (posicao-player tabuleiro player)) (first pontos) (second pontos))
+                (let ((novo-tabuleiro (funcall (no-melhor-jogada (alphabeta (no-inicial no) T prof-max (+ tempo (get-internal-real-time)))) tabuleiro player)))
+                    (ai-ai-game
+                        (list 
+                            novo-tabuleiro 
+                            (troca-player player) 
+                            (add-score-to-player player pontos (valor-posicao tabuleiro (posicao-player novo-tabuleiro player)))
+                        )
+                        tempo
+                        prof-max
+                    )
+                )                  
+            )
+        )
+    )
+)
+
+(defun player-only (tabuleiro tempo)
+    (player-player (jogada-inicial tabuleiro))
+)
+
+(defun player-ai (tabuleiro tempo)
+    (player-ai-game (jogada-inicial-player-ai tabuleiro -2) -2 tempo)
+)
+
+(defun ai-player (tabuleiro tempo)
+    (player-ai-game (jogada-inicial-player-ai  tabuleiro -1) -1 tempo)
+)
+
+(defun ai-ai (tabuleiro tempo)
+    (ai-ai-game (jogada-inicial-ai-ai tabuleiro) tempo) 
 )
