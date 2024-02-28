@@ -82,7 +82,7 @@
 
 (defun init (&optional (tabuleiro (tabuleiro-aleatorio)) (tempo 1000))
     (with-open-file 
-        (file *log* :direction :output :if-exists :new-version :if-does-not-exist :create)
+        (file *log* :direction :output :if-exists :supersede :if-does-not-exist :create)
         (format file "Tempo: ~d ms~%~%" tempo)
     )
     (let ((resultado (funcall (ler-gamemode) tabuleiro tempo)))
@@ -93,7 +93,7 @@
 
 (defun jogar (tabuleiro tempo &optional (player -1))
     (with-open-file 
-        (file *log* :direction :output :if-exists :append :if-does-not-exist :create :version :newest)
+        (file *log* :direction :output :if-exists :supersede :if-does-not-exist :create)
         (format file "Tempo: ~d ms~%~%" tempo)
     )
     (funcall (no-melhor-jogada (alphabeta (no-inicial (list tabuleiro player '(0 0))) T 100 (+ tempo (get-internal-real-time)))) tabuleiro player)
